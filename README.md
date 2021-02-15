@@ -15,7 +15,20 @@ npm install --save eosio-key-encryption
 
 ## Usage
 
-TODO
+```ts
+import {decrypt, encrypt} from 'eosio-key-encryption'
+
+const wif = '5JiAW9u8f2bwV2KcQRRt7WYMQnEdXwSxSDX2hnM2EccuX8eAXcP'
+const password = [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100] // utf-8 "hello world"
+
+encrypt(wif, password).then((encrypted) => {
+    console.log(JSON.stringify(encrypted)) // "SEC_K1_8xacaDNEJyzqu1RG4dG7sBwo9QCA24EePExWLPPTBWVDiMo6BpAw7DHq"
+})
+
+decrypt('SEC_K1_8xacaDNEJyzqu1RG4dG7sBwo9QCA24EePExWLPPTBWVDiMo6BpAw7DHq', password).then((key) => {
+    console.log(key.toWif()) // 5JiAW9u8f2bwV2KcQRRt7WYMQnEdXwSxSDX2hnM2EccuX8eAXcP
+})
+```
 
 ## Developing
 
