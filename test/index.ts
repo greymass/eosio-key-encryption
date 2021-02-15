@@ -6,6 +6,8 @@ import {strict as assert} from 'assert'
 import {EncryptedPrivateKey} from '../src/encrypted-private-key'
 
 suite('EncryptedPrivateKey', function () {
+    this.timeout(20 * 1000)
+
     test('encoding', function () {
         const keyString = 'SEC_K1_8vWLjFLTcvWNKY8wwfMKJJ3Sf278qb5xQgqXFzrRF44ECxACwoC3RPTj'
         const key = EncryptedPrivateKey.from(keyString)
