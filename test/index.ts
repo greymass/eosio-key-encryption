@@ -4,6 +4,7 @@ import {Bytes, PrivateKey, Serializer} from '@greymass/eosio'
 import {strict as assert} from 'assert'
 
 import {EncryptedPrivateKey} from '../src/encrypted-private-key'
+import {SecurityLevel} from '../src/security-level'
 
 suite('EncryptedPrivateKey', function () {
     this.timeout(20 * 1000)
@@ -36,5 +37,31 @@ suite('EncryptedPrivateKey', function () {
         assert.equal(String(decrypted), keyString)
 
         await assert.rejects(() => encrypted.decrypt('beef'))
+    })
+
+    test('scrypt params', function () {
+        assert.deepEqual(SecurityLevel.paramsFor(0), {N: 16384, r: 8, p: 1})
+        assert.deepEqual(SecurityLevel.paramsFor(0xff), {N: 2097152, r: 1024, p: 8})
+        assert.deepEqual(SecurityLevel.paramsFor(SecurityLevel.default), {N: 32768, r: 16, p: 1})
+        assert.deepEqual(SecurityLevel.paramsFor(SecurityLevel.high), {N: 65536, r: 16, p: 1})
+        assert.deepEqual(SecurityLevel.paramsFor(SecurityLevel.paranoid), {N: 131072, r: 32, p: 1})
+
+        assert.equal(SecurityLevel.headerFor({N: 16384, r: 8, p: 1}), 0)
+        assert.equal(SecurityLevel.headerFor({N: 2097152, r: 1024, p: 8}), 0xff)
+        assert.equal(SecurityLevel.headerFor({N: 32768, r: 16, p: 1}), SecurityLevel.default)
+        assert.equal(SecurityLevel.headerFor({N: 65536, r: 16, p: 1}), SecurityLevel.high)
+        assert.equal(SecurityLevel.headerFor({N: 131072, r: 32, p: 1}), SecurityLevel.paranoid)
+
+        assert.throws(() => SecurityLevel.headerFor({N: 8192, r: 8, p: 1}), /Invalid N/)
+        assert.throws(() => SecurityLevel.headerFor({N: 4194304, r: 8, p: 1}), /Invalid N/)
+        assert.throws(() => SecurityLevel.headerFor({N: 20201, r: 8, p: 1}), /Invalid N/)
+
+        assert.throws(() => SecurityLevel.headerFor({N: 16384, r: 4, p: 1}), /Invalid r/)
+        assert.throws(() => SecurityLevel.headerFor({N: 16384, r: 2048, p: 1}), /Invalid r/)
+        assert.throws(() => SecurityLevel.headerFor({N: 16384, r: 1000, p: 1}), /Invalid r/)
+
+        assert.throws(() => SecurityLevel.headerFor({N: 16384, r: 8, p: 0}), /Invalid p/)
+        assert.throws(() => SecurityLevel.headerFor({N: 16384, r: 8, p: 16}), /Invalid p/)
+        assert.throws(() => SecurityLevel.headerFor({N: 16384, r: 8, p: 3}), /Invalid p/)
     })
 })
