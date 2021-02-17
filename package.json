@@ -1,5 +1,5 @@
 {
-    "name": "@greymass/eosio-key-encryption",
+    "name": "eosio-key-encryption",
     "description": "EOSIO private key en/decryption library",
     "version": "1.0.0",
     "homepage": "https://github.com/greymass/eosio-key-encryption",
