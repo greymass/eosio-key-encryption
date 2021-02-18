@@ -15,7 +15,7 @@ import {
 } from '@greymass/eosio'
 import {ProgressCallback, scrypt} from 'scrypt-js'
 import {AES_CBC} from 'asmcrypto.js'
-import {SecurityLevel} from './security-level'
+import {SecurityLevel, SecurityLevelType} from './security-level'
 
 export type {ProgressCallback} from 'scrypt-js'
 
@@ -28,12 +28,12 @@ export class EncryptedPrivateKey implements ABISerializableObject {
         key: PrivateKeyType,
         password: BytesType,
         progress?: ProgressCallback,
-        security = SecurityLevel.default
+        security: SecurityLevelType = SecurityLevel.default
     ) {
         key = PrivateKey.from(key)
         password = Bytes.from(password)
         const checksum = getChecksum(key)
-        const params = SecurityLevel.paramsFor(security)
+        const params = SecurityLevel.paramsFor(SecurityLevel.from(security))
 
         const cbc = await CBC(password, checksum, params, progress)
         const ciphertext = cbc.encrypt(key.data.array)

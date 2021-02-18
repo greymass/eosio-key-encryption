@@ -1,3 +1,5 @@
+export type SecurityLevelType = number | {N: number; r: number; p: number}
+
 export enum SecurityLevel {
     default = 0b001_001_00, // N=32768 r=16 p=1
     high = 0b010_001_00, // N=65536 r=16 p=1
@@ -5,6 +7,17 @@ export enum SecurityLevel {
 }
 
 export namespace SecurityLevel {
+    export function from(value: SecurityLevelType) {
+        if (typeof value === 'number') {
+            if ((value & 0xff) !== value) {
+                throw new Error('Invalid security level, must be in range 0-255')
+            }
+            return value
+        } else {
+            return headerFor(value)
+        }
+    }
+
     export function paramsFor(value: SecurityLevel | number) {
         const nExp = ((value & 0b1110_0000) >> 5) + 14 // First 3 bits is N starting at 14
         const rExp = ((value & 0b0001_1100) >> 2) + 3 // Next 3 bits is r starting at 3

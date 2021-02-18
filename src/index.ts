@@ -1,13 +1,15 @@
 import {BytesType, PrivateKeyType} from '@greymass/eosio'
 import {ProgressCallback} from 'scrypt-js'
 import {EncryptedPrivateKey, EncryptedPrivateKeyType} from './encrypted-private-key'
+import {SecurityLevelType} from './security-level'
 
 export async function encrypt(
     key: PrivateKeyType,
     password: BytesType,
-    progress?: ProgressCallback
+    progress?: ProgressCallback,
+    security?: SecurityLevelType
 ) {
-    return await EncryptedPrivateKey.encrypt(key, password, progress)
+    return await EncryptedPrivateKey.encrypt(key, password, progress, security)
 }
 
 export async function decrypt(
