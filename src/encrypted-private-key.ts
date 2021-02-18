@@ -33,12 +33,13 @@ export class EncryptedPrivateKey implements ABISerializableObject {
         key = PrivateKey.from(key)
         password = Bytes.from(password)
         const checksum = getChecksum(key)
-        const params = SecurityLevel.paramsFor(SecurityLevel.from(security))
+        const level = SecurityLevel.from(security)
+        const params = SecurityLevel.paramsFor(level)
 
         const cbc = await CBC(password, checksum, params, progress)
         const ciphertext = cbc.encrypt(key.data.array)
 
-        return new this(key.type, security, checksum, ciphertext)
+        return new this(key.type, level, checksum, ciphertext)
     }
 
     static from(value: EncryptedPrivateKeyType) {
@@ -75,19 +76,19 @@ export class EncryptedPrivateKey implements ABISerializableObject {
     }
 
     readonly type: CurveType
-    private flags: UInt8
+    private level: UInt8
     private checksum: Bytes
     private ciphertext: Bytes
 
-    constructor(type: CurveType, flags: UInt8Type, checksum: BytesType, ciphertext: BytesType) {
+    constructor(type: CurveType, level: UInt8Type, checksum: BytesType, ciphertext: BytesType) {
         this.type = type
-        this.flags = UInt8.from(flags)
+        this.level = UInt8.from(level)
         this.checksum = Bytes.from(checksum)
         this.ciphertext = Bytes.from(ciphertext)
     }
 
     get params() {
-        return SecurityLevel.paramsFor(this.flags.value)
+        return SecurityLevel.paramsFor(this.level.value)
     }
 
     equals(other: EncryptedPrivateKeyType) {
@@ -109,7 +110,7 @@ export class EncryptedPrivateKey implements ABISerializableObject {
     }
 
     private toData() {
-        return Bytes.from([this.flags.value]).appending(this.checksum).appending(this.ciphertext)
+        return Bytes.from([this.level.value]).appending(this.checksum).appending(this.ciphertext)
     }
 
     toString() {
