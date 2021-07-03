@@ -13,16 +13,20 @@ import {
     UInt8,
     UInt8Type,
 } from '@greymass/eosio'
-import {ProgressCallback, scrypt} from 'scrypt-js'
+import {ProgressCallback, scrypt as scryptJs} from 'scrypt-js'
 import {AES_CBC} from 'asmcrypto.js'
 import {SecurityLevel, SecurityLevelType} from './security-level'
 
-export type {ProgressCallback} from 'scrypt-js'
+type ScryptInterface = typeof scryptJs
+
+export type {ProgressCallback, ScryptInterface}
 
 export type EncryptedPrivateKeyType = EncryptedPrivateKey | string
 
 export class EncryptedPrivateKey implements ABISerializableObject {
     static abiName = 'encrypted_private_key'
+
+    static scrypt: ScryptInterface = scryptJs
 
     static async encrypt(
         key: PrivateKeyType,
@@ -36,7 +40,7 @@ export class EncryptedPrivateKey implements ABISerializableObject {
         const level = SecurityLevel.from(security)
         const params = SecurityLevel.paramsFor(level)
 
-        const cbc = await CBC(password, checksum, params, progress)
+        const cbc = await CBC(password, checksum, params, this.scrypt, progress)
         const ciphertext = cbc.encrypt(key.data.array)
 
         return new this(key.type, level, checksum, ciphertext)
@@ -96,7 +100,13 @@ export class EncryptedPrivateKey implements ABISerializableObject {
     }
 
     async decrypt(password: BytesType, progress?: ProgressCallback) {
-        const cbc = await CBC(Bytes.from(password), this.checksum, this.params, progress)
+        const cbc = await CBC(
+            Bytes.from(password),
+            this.checksum,
+            this.params,
+            (this.constructor as typeof EncryptedPrivateKey).scrypt,
+            progress
+        )
         const data = cbc.decrypt(this.ciphertext.array)
 
         const key = new PrivateKey(this.type, Bytes.from(data))
@@ -131,6 +141,7 @@ async function CBC(
     password: Bytes,
     salt: Bytes,
     params: {N: number; r: number; p: number},
+    scrypt: ScryptInterface,
     progress?: ProgressCallback
 ) {
     const hash = await scrypt(
