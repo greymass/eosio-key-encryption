@@ -6,8 +6,8 @@ import {
     Bytes,
     BytesType,
     Checksum256,
-    CurveType,
     isInstanceOf,
+    KeyType,
     PrivateKey,
     PrivateKeyType,
     UInt8,
@@ -54,13 +54,13 @@ export class EncryptedPrivateKey implements ABISerializableObject {
     }
 
     static fromABI(decoder: ABIDecoder) {
-        const type = CurveType.from(decoder.readByte())
+        const type = KeyType.from(decoder.readByte())
         const flags = decoder.readByte()
         const checksum = decoder.readArray(4)
         let ciphertext: Uint8Array
         switch (type) {
-            case CurveType.K1:
-            case CurveType.R1:
+            case KeyType.K1:
+            case KeyType.R1:
                 ciphertext = decoder.readArray(32)
                 break
             default:
@@ -74,17 +74,17 @@ export class EncryptedPrivateKey implements ABISerializableObject {
         if (parts.length != 3 || parts[0] !== 'SEC') {
             throw new Error('Invalid encrypted private key string')
         }
-        const type = CurveType.from(parts[1])
+        const type = KeyType.from(parts[1])
         const decoded = Base58.decodeRipemd160Check(parts[2], undefined, type).array
         return new this(type, decoded[0], decoded.subarray(1, 5), decoded.subarray(5))
     }
 
-    readonly type: CurveType
+    readonly type: KeyType
     private level: UInt8
     private checksum: Bytes
     private ciphertext: Bytes
 
-    constructor(type: CurveType, level: UInt8Type, checksum: BytesType, ciphertext: BytesType) {
+    constructor(type: KeyType, level: UInt8Type, checksum: BytesType, ciphertext: BytesType) {
         this.type = type
         this.level = UInt8.from(level)
         this.checksum = Bytes.from(checksum)
@@ -128,7 +128,7 @@ export class EncryptedPrivateKey implements ABISerializableObject {
     }
 
     toABI(encoder: ABIEncoder) {
-        encoder.writeByte(CurveType.indexFor(this.type))
+        encoder.writeByte(KeyType.indexFor(this.type))
         encoder.writeArray(this.toData().array)
     }
 

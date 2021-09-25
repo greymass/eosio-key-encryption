@@ -20,7 +20,7 @@
         "prepare": "make"
     },
     "dependencies": {
-        "@greymass/eosio": "^0.4.6",
+        "@greymass/eosio": "^0.5.0",
         "asmcrypto.js": "^2.3.2",
         "scrypt-js": "^3.0.1",
         "tslib": "^2.1.0"
