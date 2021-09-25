@@ -26,7 +26,7 @@ export type EncryptedPrivateKeyType = EncryptedPrivateKey | string
 export class EncryptedPrivateKey implements ABISerializableObject {
     static abiName = 'encrypted_private_key'
 
-    static scrypt: ScryptInterface = scryptJs
+    static scrypt?: ScryptInterface = typeof scryptJs !== 'undefined' ? scryptJs : undefined
 
     static async encrypt(
         key: PrivateKeyType,
@@ -40,7 +40,7 @@ export class EncryptedPrivateKey implements ABISerializableObject {
         const level = SecurityLevel.from(security)
         const params = SecurityLevel.paramsFor(level)
 
-        const cbc = await CBC(password, checksum, params, this.scrypt, progress)
+        const cbc = await CBC(password, checksum, params, this.scrypt!, progress)
         const ciphertext = cbc.encrypt(key.data.array)
 
         return new this(key.type, level, checksum, ciphertext)
@@ -104,7 +104,7 @@ export class EncryptedPrivateKey implements ABISerializableObject {
             Bytes.from(password),
             this.checksum,
             this.params,
-            (this.constructor as typeof EncryptedPrivateKey).scrypt,
+            (this.constructor as typeof EncryptedPrivateKey).scrypt!,
             progress
         )
         const data = cbc.decrypt(this.ciphertext.array)
