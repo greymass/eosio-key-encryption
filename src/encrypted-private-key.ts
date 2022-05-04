@@ -14,7 +14,7 @@ import {
     UInt8Type,
 } from '@greymass/eosio'
 import {ProgressCallback, scrypt as scryptJs} from 'scrypt-js'
-import {AES_CBC} from 'asmcrypto.js'
+import {AES_CBC} from '@greymass/miniaes'
 import {SecurityLevel, SecurityLevelType} from './security-level'
 
 type ScryptInterface = typeof scryptJs
